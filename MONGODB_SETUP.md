@@ -26,7 +26,7 @@ syme-ai-fitness-architect/
 
 ```env
 # MongoDB Connection String
-MONGODB_URI=mongodb+srv://syme_admin:Sash6273!gsk@cluster0.c09ahok.mongodb.net/?appName=Cluster0
+MONGODB_URI=mongodb+srv://syme_admin:<password>@cluster0.c09ahok.mongodb.net/?appName=Cluster0
 
 # Database Name
 MONGODB_DB_NAME=syme_fitness
@@ -108,7 +108,7 @@ All required packages are already in `package.json`:
 ### Step 2: Configure Environment
 Create/update `.env.local` with your MongoDB connection string:
 ```env
-MONGODB_URI=mongodb+srv://syme_admin:Sash6273!gsk@cluster0.c09ahok.mongodb.net/?appName=Cluster0
+MONGODB_URI=mongodb+srv://syme_admin:<password>@cluster0.c09ahok.mongodb.net/?appName=Cluster0
 MONGODB_DB_NAME=syme_fitness
 NODE_ENV=development
 JWT_SECRET=syme_jwt_secret_key_2026_production
