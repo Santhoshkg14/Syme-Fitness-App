@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { 
   Dumbbell, 
   Utensils, 
@@ -22,7 +22,9 @@ import {
   Activity,
   Award,
   Clock,
-  Heart
+  Heart,
+  Moon,
+  Sun
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
@@ -84,6 +86,32 @@ const communityFeed = [
   { id: 1, user: "Arjun K.", action: "completed", target: "Leg Day Architect", time: "2h ago", likes: 24 },
   { id: 2, user: "Priya S.", action: "hit a PR", target: "80kg Squat", time: "4h ago", likes: 42 },
   { id: 3, user: "Rahul M.", action: "shared", target: "Transformation Progress", time: "6h ago", likes: 18 },
+];
+
+// --- Unique Premium Features Data ---
+const recoveryInsights = [
+  { id: 1, type: "sleep", status: "optimal", value: "7.5h", recommendation: "Great sleep quality! Continue maintaining this schedule." },
+  { id: 2, type: "hrv", status: "high", value: "68ms", recommendation: "Heart rate variability is excellent - system is well recovered. Perfect for intensity today." },
+  { id: 3, type: "soreness", status: "moderate", value: "5/10", recommendation: "Light activity day recommended. Focus on recovery and mobility work." },
+];
+
+const bodyComposition = [
+  { metric: "Body Fat %", value: "16.2%", change: "-0.8%", target: "12%" },
+  { metric: "Muscle Mass", value: "32.5kg", change: "+1.2kg", target: "35kg" },
+  { metric: "Bone Density", value: "1.08g/cm²", change: "+0.05", target: "1.15g/cm²" },
+];
+
+const progressPercentiles = [
+  { exercise: "Squat", weight: "140kg", percentile: "92nd", recommendation: "Elite level. Consider power development." },
+  { exercise: "Bench Press", weight: "100kg", percentile: "85th", recommendation: "Very strong. Add pauses for stability." },
+  { exercise: "Deadlift", weight: "180kg", percentile: "88th", recommendation: "Excellent progress. Work on lockout strength." },
+];
+
+const weeklyMilestones = [
+  { day: "Monday", achieved: true, description: "Complete 4 sets of compound lifts" },
+  { day: "Tuesday", achieved: true, description: "Hit protein target (140g+)" },
+  { day: "Wednesday", achieved: false, description: "Complete 8000+ steps" },
+  { day: "Thursday", achieved: true, description: "3hrs+ recovery activities" },
 ];
 
 // --- Custom Tooltip ---
@@ -164,6 +192,8 @@ export default function App() {
   const [isRegistering, setIsRegistering] = useState(true);
   const [authError, setAuthError] = useState("");
   const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [showProfileSetup, setShowProfileSetup] = useState(false);
   const [userProfile, setUserProfile] = useState<any>({
     name: "",
     age: 28,
@@ -189,12 +219,27 @@ export default function App() {
   const [showHistory, setShowHistory] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Store theme preference
   useEffect(() => {
-    if (isLoggedIn) {
-      fetchSubscriptionStatus();
-      handlePredictTransformation(userProfile);
+    localStorage.setItem('syme_theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
+  // Load theme preference on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('syme_theme');
+    if (saved === 'light') {
+      setIsDarkMode(false);
     }
-  }, [isLoggedIn]);
+  }, []);
+
+  // Theme helper
+  const themeStyles = {
+    bgCard: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f9fafb',
+    borderCard: isDarkMode ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
+    textPrimary: isDarkMode ? '#ffffff' : '#111827',
+    textSecondary: isDarkMode ? 'rgba(255,255,255,0.6)' : '#6b7280',
+    textMuted: isDarkMode ? 'rgba(255,255,255,0.4)' : '#9ca3af'
+  };
 
   const fetchSubscriptionStatus = async () => {
     const token = localStorage.getItem("syme_token");
@@ -237,6 +282,7 @@ export default function App() {
       localStorage.setItem("syme_token", data.token);
       setUserProfile((prev: any) => ({ ...prev, ...(data.user.profile || {}), name: data.user.name }));
       setIsLoggedIn(true);
+      setShowProfileSetup(true); // Show profile setup form after login
     } catch (err: any) {
       setAuthError(err.message || "Authentication failed");
     }
@@ -370,6 +416,120 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
+  // Profile Setup Screen (after login but before dashboard)
+  if (isLoggedIn && showProfileSetup) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white font-sans flex flex-col items-center justify-center px-6 relative overflow-hidden">
+        {/* Animated Background Glow */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/5 blur-[120px] rounded-full" />
+
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-8 max-w-lg relative z-10"
+        >
+          <div className="space-y-2">
+            <motion.h1 
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="text-5xl font-black tracking-tighter text-emerald-500"
+            >
+              PERSONALIZE
+            </motion.h1>
+            <p className="text-xs uppercase tracking-[0.4em] text-white/40 font-bold">Your Fitness Profile</p>
+          </div>
+
+          <p className="text-sm text-white/40 leading-relaxed">
+            Tell us about yourself. This helps us build your perfect workout plan.
+          </p>
+
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            setShowProfileSetup(false);
+          }} className="space-y-4 pt-4">
+            <div>
+              <label className="text-xs uppercase tracking-widest text-white/60 font-bold mb-2 block">Age</label>
+              <input 
+                type="number" 
+                placeholder="25"
+                min="15"
+                max="100"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-lg font-medium focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-white/10"
+                value={userProfile.age || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setUserProfile({ ...userProfile, age: "" });
+                  } else {
+                    const num = parseInt(val);
+                    if (!isNaN(num) && num >= 15 && num <= 100) {
+                      setUserProfile({ ...userProfile, age: num });
+                    }
+                  }
+                }}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-xs uppercase tracking-widest text-white/60 font-bold mb-2 block">Height (cm)</label>
+              <input 
+                type="number" 
+                placeholder="178"
+                min="120"
+                max="250"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-lg font-medium focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-white/10"
+                value={userProfile.height}
+                onChange={(e) => setUserProfile({ ...userProfile, height: parseInt(e.target.value) || 178 })}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-xs uppercase tracking-widest text-white/60 font-bold mb-2 block">Current Weight (kg)</label>
+              <input 
+                type="number" 
+                placeholder="75"
+                min="30"
+                max="250"
+                step="0.1"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-lg font-medium focus:outline-none focus:border-emerald-500/50 transition-all placeholder:text-white/10"
+                value={userProfile.weight}
+                onChange={(e) => setUserProfile({ ...userProfile, weight: parseFloat(e.target.value) || 75 })}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-xs uppercase tracking-widest text-white/60 font-bold mb-2 block">Primary Goal</label>
+              <select 
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-lg font-medium focus:outline-none focus:border-emerald-500/50 transition-all text-white appearance-none cursor-pointer"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2310b981' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center', paddingRight: '40px' }}
+                value={userProfile.goal}
+                onChange={(e) => setUserProfile({ ...userProfile, goal: e.target.value })}
+                required
+              >
+                <option value="hypertrophy" style={{ backgroundColor: '#050505', color: '#fff' }}>Build Muscle (Hypertrophy)</option>
+                <option value="strength" style={{ backgroundColor: '#050505', color: '#fff' }}>Increase Strength</option>
+                <option value="weight_loss" style={{ backgroundColor: '#050505', color: '#fff' }}>Lose Fat</option>
+                <option value="maintenance" style={{ backgroundColor: '#050505', color: '#fff' }}>Maintain Weight</option>
+                <option value="athletic_performance" style={{ backgroundColor: '#050505', color: '#fff' }}>Improve Athletic Performance</option>
+              </select>
+            </div>
+            
+            <button 
+              type="submit"
+              className="w-full bg-emerald-500 text-black py-5 rounded-2xl font-black text-lg shadow-[0_0_40px_rgba(16,185,129,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all mt-6"
+            >
+              START YOUR JOURNEY
+            </button>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-[#050505] text-white font-sans flex flex-col items-center justify-center px-6 relative overflow-hidden">
@@ -453,35 +613,60 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-emerald-500/30 pb-32">
+    <div className={`min-h-screen font-sans selection:bg-emerald-500/30 pb-32 transition-colors duration-300`}
+      style={{
+        backgroundColor: isDarkMode ? '#050505' : '#ffffff',
+        color: isDarkMode ? '#ffffff' : '#111827'
+      }}>
       {/* Header */}
-      <header className="px-6 py-8 flex justify-between items-center bg-black/40 backdrop-blur-2xl border-b border-white/5 sticky top-0 z-50">
+      <header className={`px-6 py-8 flex justify-between items-center backdrop-blur-2xl border-b sticky top-0 z-50 transition-colors duration-300`}
+        style={{
+          backgroundColor: isDarkMode ? 'rgba(0,0,0,0.4)' : 'rgba(249,250,251,0.4)',
+          borderBottomColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#e5e7eb'
+        }}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)]">
             <Zap size={24} className="text-black" />
           </div>
           <div>
-            <h1 className="text-xl font-black tracking-tighter text-white">SYME</h1>
+            <h1 className="text-xl font-black tracking-tighter" style={{ color: isDarkMode ? '#ffffff' : '#111827' }}>SYME</h1>
             <p className="text-[9px] uppercase tracking-[0.3em] text-emerald-500 font-black">Architect Mode</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-right hidden sm:block">
-            <p className="text-[10px] uppercase tracking-widest text-white/40 font-black">Current Streak</p>
+            <p className="text-[10px] uppercase tracking-widest font-black" style={{ color: isDarkMode ? 'rgba(255,255,255,0.4)' : '#4b5563' }}>Current Streak</p>
             <p className="text-sm font-black text-orange-500 flex items-center justify-end gap-1">
               <Flame size={14} /> 12 Days
             </p>
           </div>
           <button 
-            onClick={() => setActiveTab("profile")}
-            className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all"
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`w-10 h-10 rounded-xl border flex items-center justify-center hover:scale-110 transition-all`}
+            style={{
+              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f3f4f6',
+              borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
+              color: isDarkMode ? 'rgba(255,255,255,0.6)' : '#4b5563'
+            }}
+            title="Toggle Dark Mode"
           >
-            <User size={20} className="text-white/60" />
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          <button 
+            onClick={() => setActiveTab("profile")}
+            className={`w-10 h-10 rounded-xl border flex items-center justify-center hover:scale-110 transition-all`}
+            style={{
+              backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f3f4f6',
+              borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#e5e7eb',
+              color: isDarkMode ? 'rgba(255,255,255,0.6)' : '#4b5563'
+            }}
+          >
+            <User size={20} />
           </button>
         </div>
       </header>
 
-      <main className="px-6 pt-8 max-w-2xl mx-auto space-y-10">
+      <main className={`px-6 pt-8 max-w-2xl mx-auto space-y-10 transition-colors duration-300`}>
         <AnimatePresence mode="wait">
           {successMessage && (
             <motion.div 
@@ -503,8 +688,8 @@ export default function App() {
               className="space-y-10"
             >
               <div className="space-y-2">
-                <h2 className="text-5xl font-black tracking-tighter leading-none">Status Report.</h2>
-                <p className="text-sm text-white/40 font-medium italic">Optimization in progress for {userProfile.name}.</p>
+                <h2 className="text-5xl font-black tracking-tighter leading-none" style={{ color: isDarkMode ? '#ffffff' : '#111827' }}>Status Report.</h2>
+                <p className="text-sm font-medium italic" style={{ color: isDarkMode ? 'rgba(255,255,255,0.4)' : '#6b7280' }}>Optimization in progress for {userProfile.name}.</p>
               </div>
 
               {/* Core Stats */}
@@ -613,6 +798,102 @@ export default function App() {
                       <div className="bg-emerald-500 h-full w-[50%]" />
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* UNIQUE FEATURE: Recovery Intelligence */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-black">🧠 Recovery Intelligence</h3>
+                  <Heart size={16} className="text-red-500" />
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  {recoveryInsights.map((insight) => (
+                    <div key={insight.id} className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">{insight.type === 'sleep' ? '😴 Sleep' : insight.type === 'hrv' ? '❤️ HRV' : '😣 Soreness'}</p>
+                          <p className="text-lg font-black mt-1">{insight.value}</p>
+                        </div>
+                        <span className={`text-[10px] font-black px-2 py-1 rounded-md ${insight.status === 'optimal' ? 'bg-emerald-500/20 text-emerald-400' : insight.status === 'high' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                          {insight.status.toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-[9px] text-white/50 italic leading-tight">{insight.recommendation}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* UNIQUE FEATURE: Body Composition Tracking */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-black">📊 Body Composition</h3>
+                  <Award size={16} className="text-purple-500" />
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  {bodyComposition.map((comp, idx) => (
+                    <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">{comp.metric}</p>
+                        <span className={`text-[10px] font-black ${comp.change.includes('+') ? 'text-emerald-400' : 'text-emerald-400'}`}>
+                          {comp.change}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-end">
+                        <p className="text-xl font-black">{comp.value}</p>
+                        <p className="text-[9px] text-white/40 uppercase tracking-widest">Target: {comp.target}</p>
+                      </div>
+                      <div className="h-1 bg-white/5 rounded-full mt-3 overflow-hidden">
+                        <div className="bg-gradient-to-r from-emerald-500 to-blue-500 h-full w-[65%]" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* UNIQUE FEATURE: Performance Percentiles */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-black">🏆 Strength Percentiles</h3>
+                  <Trophy size={16} className="text-amber-500" />
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                  {progressPercentiles.map((perf, idx) => (
+                    <motion.div 
+                      key={idx}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2"
+                    >
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm font-black">{perf.exercise}</p>
+                        <span className="text-[10px] font-black bg-amber-500/20 text-amber-400 px-2 py-1 rounded-md">{perf.percentile}</span>
+                      </div>
+                      <p className="text-lg font-black text-emerald-500">{perf.weight}</p>
+                      <p className="text-[9px] text-white/50 italic">{perf.recommendation}</p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* UNIQUE FEATURE: Weekly Milestones */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-black">📅 Weekly Milestones</h3>
+                  <Zap size={16} className="text-yellow-500" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {weeklyMilestones.map((milestone, idx) => (
+                    <div key={idx} className={`rounded-2xl p-4 border transition-all ${milestone.achieved ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-white/5 border-white/10 opacity-60'}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        {milestone.achieved && <CheckCircle2 size={14} className="text-emerald-500" />}
+                        <p className="text-[10px] font-black uppercase tracking-widest">{milestone.day}</p>
+                      </div>
+                      <p className="text-[9px] text-white/60">{milestone.description}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
