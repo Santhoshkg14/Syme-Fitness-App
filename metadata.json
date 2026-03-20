@@ -1,0 +1,5 @@
+{
+  "name": "Syme - AI Fitness Architect",
+  "description": "Architect of Your Ambition. Precision AI fitness with adaptive workouts, vision-based nutrition tracking, and predictive transformation analytics.",
+  "requestFramePermissions": ["camera"]
+}
